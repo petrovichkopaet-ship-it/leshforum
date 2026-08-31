@@ -1,0 +1,14 @@
+{
+  "name": "leshuysk-forum",
+  "version": "1.0.0",
+  "description": "Городской форум Лешуйска",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "seed": "node seed.js"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "license": "MIT"
+}

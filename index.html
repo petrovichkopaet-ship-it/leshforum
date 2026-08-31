@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Лешуйск / Форум</title>
+<style>
+/* Tahoma — стандартный системный шрифт Windows, интернет не требуется */
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Tahoma, Verdana, Arial, sans-serif;
+  font-size: 11px;
+  background: #3A6EA5 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4"><rect width="4" height="4" fill="%23408CD4"/></svg>');
+  height: 100vh;
+  overflow: hidden;
+}
+
+.xp-desktop {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(180deg, #5A8FD6 0%, #3A6EA5 40%, #2A5A9A 100%);
+  overflow: hidden;
+}
+
+/* ---------- ОКНО ---------- */
+.xp-window {
+  position: absolute;
+  top: 6%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 640px;
+  max-width: 94vw;
+  background: #ECE9D8;
+  border: 1px solid #0831D9;
+  border-radius: 8px 8px 3px 3px;
+  box-shadow: 3px 3px 10px rgba(0,0,0,0.5);
+  overflow: hidden;
+}
+
+#forum-window {
+  width: 900px;
+  max-width: 96vw;
+  top: 3%;
+  height: 88vh;
+  display: flex;
+  flex-direction: column;
+}
+
+#new-thread-window {
+  width: 480px;
+  top: 12%;
+  z-index: 50;
+}
+
+.xp-titlebar {
+  background: linear-gradient(180deg, #2A6BDB 0%, #1A4FBF 8%, #1450DD 40%, #0F3FCE 90%, #1547CE 100%);
+  color: white;
+  font-weight: bold;
+  font-size: 13px;
+  padding: 4px 4px 5px 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+  border-radius: 7px 7px 0 0;
+}
+.xp-titlebar-left { display: flex; align-items: center; gap: 6px; }
+.xp-icon { font-size: 14px; }
+.xp-titlebar-buttons { display: flex; gap: 2px; }
+.xp-titlebar-buttons button {
+  width: 21px; height: 19px;
+  background: linear-gradient(180deg, #4F91E6, #1857D6);
+  border: 1px solid #0B3D9C;
+  border-radius: 3px;
+  color: white;
+  font-weight: bold;
+  font-size: 11px;
+  cursor: pointer;
+  line-height: 1;
+}
+.xp-btn-close { background: linear-gradient(180deg, #E88A7D, #C6402B) !important; }
+
+.xp-menubar {
+  background: #ECE9D8;
+  border-bottom: 1px solid #ACA899;
+  padding: 3px 8px;
+  display: flex;
+  gap: 14px;
+  font-size: 11px;
+  color: #333;
+}
+.xp-menubar span:hover { background: #316AC5; color: white; padding: 0 3px; }
+
+.xp-toolbar {
+  background: #ECE9D8;
+  border-bottom: 1px solid #ACA899;
+  padding: 4px 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.xp-toolbar-btn {
+  background: #ECE9D8;
+  border: 1px solid transparent;
+  padding: 3px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  border-radius: 3px;
+  font-family: Tahoma, sans-serif;
+}
+.xp-toolbar-btn:hover { border-color: #A5C6EE; background: #E5F1FE; }
+.user-info { margin-left: auto; margin-right: 8px; font-weight: bold; color: #1A4FBF; }
+.user-info .mayor-tag {
+  background: linear-gradient(180deg, #FFD966, #E5A800);
+  border: 1px solid #A87400;
+  border-radius: 3px;
+  padding: 1px 5px;
+  color: #4A2E00;
+  font-size: 10px;
+  margin-left: 4px;
+}
+
+.xp-addressbar {
+  background: #ECE9D8;
+  border-bottom: 1px solid #ACA899;
+  padding: 4px 6px;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.xp-addressbar input {
+  flex: 1;
+  border: 1px solid #7F9DB9;
+  padding: 2px 4px;
+  font-family: Tahoma, sans-serif;
+  font-size: 11px;
+  background: white;
+}
+
+.xp-window-body {
+  background: white;
+  padding: 16px;
+  overflow-y: auto;
+}
+.forum-body { flex: 1; background: #F5F5F5; }
+
+/* ---------- Вход / регистрация ---------- */
+.auth-tabs { display: flex; margin-bottom: 12px; border-bottom: 2px solid #316AC5; }
+.auth-tab {
+  flex: 1;
+  padding: 8px;
+  background: #ECE9D8;
+  border: 1px solid #ACA899;
+  border-bottom: none;
+  cursor: pointer;
+  font-family: Tahoma, sans-serif;
+  font-size: 12px;
+}
+.auth-tab.active { background: white; font-weight: bold; color: #1A4FBF; }
+
+.auth-form { display: flex; flex-direction: column; gap: 4px; }
+.auth-form label { font-weight: bold; margin-top: 6px; color: #333; }
+.auth-form input, .auth-form textarea, .auth-form select {
+  border: 1px solid #7F9DB9;
+  padding: 5px 6px;
+  font-family: Tahoma, sans-serif;
+  font-size: 12px;
+  background: white;
+}
+.auth-form input:focus, .auth-form textarea:focus { outline: 2px solid #316AC5; }
+.error-msg { color: #C6402B; font-weight: bold; min-height: 14px; }
+
+.xp-button {
+  margin-top: 12px;
+  padding: 6px 14px;
+  background: linear-gradient(180deg, #FDFDFD 0%, #EBEBEB 45%, #D8D8D8 50%, #E8E8E8 100%);
+  border: 1px solid #888;
+  border-radius: 3px;
+  font-family: Tahoma, sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+}
+.xp-button:hover { border-color: #316AC5; background: #E5F1FE; }
+.xp-button:active { background: #C2DDFC; }
+.xp-button.small { padding: 3px 8px; margin-bottom: 10px; font-size: 11px; }
+
+/* ---------- Форум: разделы / темы ---------- */
+.categories-list { display: flex; flex-direction: column; gap: 8px; }
+.category-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(180deg, #F3F7FD, #DCE9FA);
+  border: 1px solid #A5C6EE;
+  border-radius: 4px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+.category-item:hover { background: #E5F1FE; }
+.category-item h3 { margin: 0; color: #1A4FBF; font-size: 13px; }
+.category-item p { margin: 2px 0 0; color: #555; font-size: 11px; }
+.category-icon { font-size: 22px; margin-right: 10px; }
+
+.xp-table { width: 100%; border-collapse: collapse; background: white; }
+.xp-table th {
+  background: linear-gradient(180deg, #F3F7FD, #C2DDFC);
+  border: 1px solid #A5C6EE;
+  padding: 6px;
+  text-align: left;
+  font-size: 11px;
+}
+.xp-table td {
+  border: 1px solid #DCE9FA;
+  padding: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.xp-table tr:hover td { background: #F0F7FF; }
+
+.tag-badge {
+  background: linear-gradient(180deg, #FFD966, #E5A800);
+  border: 1px solid #A87400;
+  border-radius: 3px;
+  padding: 0 5px;
+  color: #4A2E00;
+  font-size: 10px;
+  margin-left: 4px;
+}
+
+.posts-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+.post-item {
+  background: #F9FAFF;
+  border: 1px solid #DCE9FA;
+  border-radius: 4px;
+  padding: 10px;
+}
+.post-author { font-weight: bold; color: #1A4FBF; margin-bottom: 4px; }
+.post-message { white-space: pre-wrap; word-wrap: break-word; font-size: 13px; }
+.post-time { color: #999; font-size: 10px; margin-top: 4px; }
+
+.reply-form { display: flex; flex-direction: column; gap: 4px; border-top: 1px solid #DCE9FA; padding-top: 10px; }
+.reply-form textarea { border: 1px solid #7F9DB9; padding: 6px; font-family: Tahoma, sans-serif; font-size: 12px; }
+
+/* ---------- Панель эмодзи «как в аське» ---------- */
+.emoji-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  background: #ECE9D8;
+  border: 1px solid #ACA899;
+  padding: 4px;
+  margin: 4px 0;
+  border-radius: 3px;
+}
+.emoji-bar button {
+  background: white;
+  border: 1px solid #C0C0C0;
+  border-radius: 3px;
+  font-size: 15px;
+  width: 26px;
+  height: 24px;
+  cursor: pointer;
+  line-height: 1;
+}
+.emoji-bar button:hover { border-color: #316AC5; background: #E5F1FE; }
+
+/* ---------- Панель задач ---------- */
+.xp-taskbar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 30px;
+  background: linear-gradient(180deg, #2A6BDB 0%, #1A4FBF 8%, #1450DD 40%, #0F3FCE 90%, #1547CE 100%);
+  display: flex;
+  align-items: center;
+  box-shadow: 0 -1px 4px rgba(0,0,0,0.4);
+}
+.xp-start-button {
+  background: linear-gradient(180deg, #4EA53B, #2D7A1D);
+  color: white;
+  font-weight: bold;
+  font-style: italic;
+  padding: 3px 14px 3px 8px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 0 10px 10px 0;
+  font-size: 13px;
+  cursor: default;
+  text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+}
+.xp-start-icon { font-size: 15px; }
+.xp-taskbar-items { flex: 1; display: flex; gap: 4px; padding-left: 8px; }
+.xp-tray {
+  background: #1450DD;
+  color: white;
+  padding: 0 12px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  font-size: 11px;
+  border-left: 1px solid #274FA5;
+}
+
+</style>
+</head>
+<body>
+
+<div class="xp-desktop">
+
+  <!-- ОКНО ВХОДА / РЕГИСТРАЦИИ -->
+  <div class="xp-window" id="auth-window">
+    <div class="xp-titlebar">
+      <div class="xp-titlebar-left">
+        <span class="xp-icon">🏛️</span>
+        <span>Лешуйск / Форум — Вход в систему</span>
+      </div>
+      <div class="xp-titlebar-buttons">
+        <button class="xp-btn-min">_</button>
+        <button class="xp-btn-max">□</button>
+        <button class="xp-btn-close">×</button>
+      </div>
+    </div>
+    <div class="xp-window-body">
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login">Вход</button>
+        <button class="auth-tab" data-tab="register">Регистрация</button>
+      </div>
+
+      <form id="login-form" class="auth-form">
+        <p class="error-msg" id="login-error"></p>
+        <label>Номер телефона</label>
+        <input type="text" id="login-phone" placeholder="+79291227003" required>
+        <label>Пароль</label>
+        <input type="password" id="login-password" required>
+        <button type="submit" class="xp-button">Войти на форум</button>
+      </form>
+
+      <form id="register-form" class="auth-form" style="display:none;">
+        <p class="error-msg" id="register-error"></p>
+        <label>Имя</label>
+        <input type="text" id="reg-name" placeholder="Иван Иванов" required>
+        <label>Номер телефона</label>
+        <input type="text" id="reg-phone" placeholder="+79001234567" required>
+        <label>Пароль</label>
+        <input type="password" id="reg-password" required>
+        <button type="submit" class="xp-button">Зарегистрироваться</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ГЛАВНОЕ ОКНО ФОРУМА -->
+  <div class="xp-window" id="forum-window" style="display:none;">
+    <div class="xp-titlebar">
+      <div class="xp-titlebar-left">
+        <span class="xp-icon">🏛️</span>
+        <span>Лешуйск / Форум</span>
+      </div>
+      <div class="xp-titlebar-buttons">
+        <button class="xp-btn-min">_</button>
+        <button class="xp-btn-max">□</button>
+        <button class="xp-btn-close">×</button>
+      </div>
+    </div>
+    <div class="xp-menubar">
+      <span>Файл</span><span>Правка</span><span>Вид</span><span>Избранное</span><span>Сервис</span><span>Справка</span>
+    </div>
+    <div class="xp-toolbar">
+      <button class="xp-toolbar-btn" id="btn-home">🏠 Главная</button>
+      <button class="xp-toolbar-btn" id="btn-new-thread">➕ Новая тема</button>
+      <span class="user-info" id="user-info"></span>
+      <button class="xp-toolbar-btn" id="btn-logout">🚪 Выйти</button>
+    </div>
+    <div class="xp-addressbar">
+      Адрес: <input type="text" id="address-bar" readonly value="leshuysk-forum://главная">
+    </div>
+
+    <div class="xp-window-body forum-body">
+      <div id="view-categories" class="forum-view">
+        <h2>Разделы форума</h2>
+        <div id="categories-list" class="categories-list"></div>
+      </div>
+
+      <div id="view-threads" class="forum-view" style="display:none;">
+        <button class="xp-button small" id="btn-back-categories">← Назад к разделам</button>
+        <h2 id="threads-title">Раздел</h2>
+        <table class="xp-table" id="threads-table">
+          <thead><tr><th>Тема</th><th>Автор</th><th>Сообщений</th></tr></thead>
+          <tbody id="threads-tbody"></tbody>
+        </table>
+      </div>
+
+      <div id="view-thread" class="forum-view" style="display:none;">
+        <button class="xp-button small" id="btn-back-threads">← Назад к темам</button>
+        <h2 id="thread-title">Тема</h2>
+        <div id="posts-list" class="posts-list"></div>
+        <form id="reply-form" class="reply-form">
+          <label>Ваш ответ:</label>
+          <textarea id="reply-message" rows="4" required></textarea>
+          <button type="submit" class="xp-button">Отправить</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- МОДАЛЬНОЕ ОКНО СОЗДАНИЯ ТЕМЫ -->
+  <div class="xp-window" id="new-thread-window" style="display:none;">
+    <div class="xp-titlebar">
+      <div class="xp-titlebar-left"><span class="xp-icon">📝</span><span>Новая тема</span></div>
+      <div class="xp-titlebar-buttons"><button class="xp-btn-close" id="close-new-thread">×</button></div>
+    </div>
+    <div class="xp-window-body">
+      <form id="new-thread-form" class="auth-form">
+        <p class="error-msg" id="new-thread-error"></p>
+        <label>Раздел</label>
+        <select id="nt-category"></select>
+        <label>Заголовок темы</label>
+        <input type="text" id="nt-title" required>
+        <label>Сообщение</label>
+        <textarea id="nt-message" rows="5" required></textarea>
+        <button type="submit" class="xp-button">Создать тему</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ПАНЕЛЬ ЗАДАЧ WINDOWS XP -->
+  <div class="xp-taskbar">
+    <div class="xp-start-button">
+      <span class="xp-start-icon">⊞</span> Пуск
+    </div>
+    <div class="xp-taskbar-items" id="taskbar-items"></div>
+    <div class="xp-tray">
+      <span id="clock">00:00</span>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== Лешуйск / Форум — клиентская логика =====
+
+// ---------- ICQ-стиль смайликов: текстовый код -> юникод-эмодзи ----------
+const ICQ_SMILES = [
+  { code: ':-)))', emoji: '😄' },
+  { code: ':-))', emoji: '😃' },
+  { code: ':-)', emoji: '🙂' },
+  { code: ':)', emoji: '🙂' },
+  { code: ':-(', emoji: '☹️' },
+  { code: ':(', emoji: '☹️' },
+  { code: ';-)', emoji: '😉' },
+  { code: ';)', emoji: '😉' },
+  { code: ':-D', emoji: '😀' },
+  { code: ':D', emoji: '😀' },
+  { code: ':-P', emoji: '😛' },
+  { code: ':P', emoji: '😛' },
+  { code: ':-p', emoji: '😛' },
+  { code: ':-O', emoji: '😮' },
+  { code: ':-o', emoji: '😮' },
+  { code: ':-*', emoji: '😘' },
+  { code: ':*', emoji: '😘' },
+  { code: '8-)', emoji: '😎' },
+  { code: 'B-)', emoji: '😎' },
+  { code: ':-/', emoji: '😕' },
+  { code: ':-\\', emoji: '😕' },
+  { code: ":'-(", emoji: '😢' },
+  { code: ":'(", emoji: '😢' },
+  { code: 'X-(', emoji: '😠' },
+  { code: 'x-(', emoji: '😠' },
+  { code: ':-#', emoji: '🤐' },
+  { code: 'O:-)', emoji: '😇' },
+  { code: '<3', emoji: '❤️' },
+  { code: '</3', emoji: '💔' },
+  { code: '(rose)', emoji: '🌹' },
+  { code: '(beer)', emoji: '🍺' },
+  { code: '(coffee)', emoji: '☕' },
+  { code: '(ok)', emoji: '👌' },
+  { code: '(y)', emoji: '👍' },
+  { code: '(n)', emoji: '👎' },
+  { code: '(hi)', emoji: '👋' },
+  { code: '(handshake)', emoji: '🤝' },
+  { code: '(clap)', emoji: '👏' },
+  { code: '(sun)', emoji: '☀️' },
+  { code: '(moon)', emoji: '🌙' },
+  { code: '(star)', emoji: '⭐' },
+];
+// Длинные коды проверяем раньше коротких (":-)))" раньше ":)")
+ICQ_SMILES.sort((a, b) => b.code.length - a.code.length);
+
+function escapeHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function applySmiles(rawText) {
+  let text = escapeHtml(rawText);
+  for (const { code, emoji } of ICQ_SMILES) {
+    text = text.split(escapeHtml(code)).join(emoji);
+  }
+  return text;
+}
+
+// Палитра юникод-эмодзи для панели быстрой вставки (как в аське)
+const EMOJI_PALETTE = [
+  '🙂','😀','😃','😄','😁','😉','😍','😘','😛','😎',
+  '☹️','😢','😭','😠','😮','😴','🤔','😇','😱','🥳',
+  '👍','👎','👌','👏','🤝','👋','💪','🙏','❤️','💔',
+  '🌹','⭐','☀️','🌙','☕','🍺','🎉','🔥','💡','✅'
+];
+
+let state = {
+  token: localStorage.getItem('forum_token') || null,
+  user: null,
+  categories: [],
+  currentCategory: null,
+  currentThread: null
+};
+
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+
+async function api(path, options = {}) {
+  const headers = options.headers || {};
+  headers['Content-Type'] = 'application/json';
+  if (state.token) headers['Authorization'] = 'Bearer ' + state.token;
+  const res = await fetch(path, { ...options, headers });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Ошибка запроса');
+  return data;
+}
+
+// ---------- Вкладки авторизации ----------
+$$('.auth-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    $$('.auth-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const isLogin = tab.dataset.tab === 'login';
+    $('#login-form').style.display = isLogin ? 'flex' : 'none';
+    $('#register-form').style.display = isLogin ? 'none' : 'flex';
+  });
+});
+
+$('#login-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const phone = $('#login-phone').value.trim();
+  const password = $('#login-password').value;
+  try {
+    const data = await api('/api/login', { method: 'POST', body: JSON.stringify({ phone, password }) });
+    onAuthSuccess(data);
+  } catch (err) {
+    $('#login-error').textContent = err.message;
+  }
+});
+
+$('#register-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const name = $('#reg-name').value.trim();
+  const phone = $('#reg-phone').value.trim();
+  const password = $('#reg-password').value;
+  try {
+    const data = await api('/api/register', { method: 'POST', body: JSON.stringify({ name, phone, password }) });
+    onAuthSuccess(data);
+  } catch (err) {
+    $('#register-error').textContent = err.message;
+  }
+});
+
+function onAuthSuccess(data) {
+  state.token = data.token;
+  state.user = data.user;
+  localStorage.setItem('forum_token', data.token);
+  $('#auth-window').style.display = 'none';
+  $('#forum-window').style.display = 'flex';
+  renderUserInfo();
+  loadCategories();
+}
+
+function renderUserInfo() {
+  const tagHtml = state.user.tag ? `<span class="mayor-tag">${escapeHtml(state.user.tag)}</span>` : '';
+  $('#user-info').innerHTML = `${escapeHtml(state.user.name)} ${tagHtml}`;
+}
+
+$('#btn-logout').addEventListener('click', async () => {
+  try { await api('/api/logout', { method: 'POST' }); } catch (e) {}
+  localStorage.removeItem('forum_token');
+  state.token = null; state.user = null;
+  $('#forum-window').style.display = 'none';
+  $('#auth-window').style.display = 'block';
+});
+
+// ---------- Разделы ----------
+async function loadCategories() {
+  const data = await api('/api/categories');
+  state.categories = data.categories;
+  const list = $('#categories-list');
+  list.innerHTML = '';
+  const icons = ['📢', '🏙️', '🚧', '💬'];
+  data.categories.forEach((cat, i) => {
+    const div = document.createElement('div');
+    div.className = 'category-item';
+    div.innerHTML = `<div style="display:flex;align-items:center;">
+        <span class="category-icon">${icons[i % icons.length]}</span>
+        <div><h3>${escapeHtml(cat.name)}</h3><p>${escapeHtml(cat.description)}</p></div>
+      </div>`;
+    div.addEventListener('click', () => openCategory(cat));
+    list.appendChild(div);
+  });
+  showView('categories');
+}
+
+function showView(name) {
+  $('#view-categories').style.display = name === 'categories' ? 'block' : 'none';
+  $('#view-threads').style.display = name === 'threads' ? 'block' : 'none';
+  $('#view-thread').style.display = name === 'thread' ? 'block' : 'none';
+  const addr = { categories: 'главная', threads: 'раздел', thread: 'тема' }[name];
+  $('#address-bar').value = 'leshuysk-forum://' + addr;
+}
+
+$('#btn-home').addEventListener('click', loadCategories);
+
+// ---------- Темы раздела ----------
+async function openCategory(cat) {
+  state.currentCategory = cat;
+  $('#threads-title').textContent = cat.name;
+  const data = await api('/api/threads?category=' + encodeURIComponent(cat.id));
+  const tbody = $('#threads-tbody');
+  tbody.innerHTML = '';
+  if (data.threads.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#888;">Пока нет ни одной темы. Будьте первым!</td></tr>';
+  }
+  data.threads.forEach(t => {
+    const tr = document.createElement('tr');
+    const tagHtml = t.authorTag ? `<span class="tag-badge">${escapeHtml(t.authorTag)}</span>` : '';
+    tr.innerHTML = `<td>${escapeHtml(t.title)}</td><td>${escapeHtml(t.authorName)}${tagHtml}</td><td>${t.postCount}</td>`;
+    tr.addEventListener('click', () => openThread(t));
+    tbody.appendChild(tr);
+  });
+  showView('threads');
+}
+$('#btn-back-categories').addEventListener('click', loadCategories);
+
+// ---------- Просмотр темы ----------
+async function openThread(thread) {
+  state.currentThread = thread;
+  $('#thread-title').textContent = thread.title;
+  await refreshPosts();
+  showView('thread');
+}
+$('#btn-back-threads').addEventListener('click', () => openCategory(state.currentCategory));
+
+async function refreshPosts() {
+  const data = await api('/api/posts?thread=' + encodeURIComponent(state.currentThread.id));
+  const list = $('#posts-list');
+  list.innerHTML = '';
+  data.posts.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'post-item';
+    const tagHtml = p.authorTag ? `<span class="tag-badge">${escapeHtml(p.authorTag)}</span>` : '';
+    div.innerHTML = `<div class="post-author">${escapeHtml(p.authorName)}${tagHtml}</div>
+      <div class="post-message">${applySmiles(p.message)}</div>
+      <div class="post-time">${new Date(p.createdAt).toLocaleString('ru-RU')}</div>`;
+    list.appendChild(div);
+  });
+}
+
+$('#reply-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const message = $('#reply-message').value.trim();
+  if (!message) return;
+  await api('/api/posts', { method: 'POST', body: JSON.stringify({ threadId: state.currentThread.id, message }) });
+  $('#reply-message').value = '';
+  await refreshPosts();
+});
+
+// ---------- Новая тема ----------
+$('#btn-new-thread').addEventListener('click', () => {
+  const sel = $('#nt-category');
+  sel.innerHTML = state.categories.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+  $('#new-thread-window').style.display = 'block';
+});
+$('#close-new-thread').addEventListener('click', () => $('#new-thread-window').style.display = 'none');
+
+$('#new-thread-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const categoryId = $('#nt-category').value;
+  const title = $('#nt-title').value.trim();
+  const message = $('#nt-message').value.trim();
+  try {
+    await api('/api/threads', { method: 'POST', body: JSON.stringify({ categoryId, title, message }) });
+    $('#new-thread-window').style.display = 'none';
+    $('#nt-title').value = ''; $('#nt-message').value = '';
+    const cat = state.categories.find(c => c.id === categoryId);
+    await openCategory(cat);
+  } catch (err) {
+    $('#new-thread-error').textContent = err.message;
+  }
+});
+
+// ---------- Панели эмодзи «как в аське» ----------
+function buildEmojiBar(targetTextareaSelector, afterElementSelector) {
+  const bar = document.createElement('div');
+  bar.className = 'emoji-bar';
+  EMOJI_PALETTE.forEach(emoji => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = emoji;
+    btn.title = 'Вставить смайлик';
+    btn.addEventListener('click', () => {
+      const ta = $(targetTextareaSelector);
+      const start = ta.selectionStart, end = ta.selectionEnd;
+      ta.value = ta.value.slice(0, start) + emoji + ta.value.slice(end);
+      ta.focus();
+      ta.selectionStart = ta.selectionEnd = start + emoji.length;
+    });
+    bar.appendChild(btn);
+  });
+  const after = $(afterElementSelector);
+  after.parentNode.insertBefore(bar, after);
+}
+
+buildEmojiBar('#reply-message', '#reply-message');
+buildEmojiBar('#nt-message', '#nt-message');
+
+// ---------- Часы в трее ----------
+function updateClock() {
+  const now = new Date();
+  $('#clock').textContent = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ---------- Кнопки окон (визуальные, для стиля) ----------
+$$('.xp-btn-close').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const win = btn.closest('.xp-window');
+    if (win.id === 'new-thread-window') win.style.display = 'none';
+  });
+});
+
+// ---------- Автовход по сохранённому токену ----------
+(async function tryAutoLogin() {
+  if (!state.token) return;
+  try {
+    const data = await api('/api/me');
+    state.user = data.user;
+    $('#auth-window').style.display = 'none';
+    $('#forum-window').style.display = 'flex';
+    renderUserInfo();
+    loadCategories();
+  } catch (e) {
+    localStorage.removeItem('forum_token');
+    state.token = null;
+  }
+})();
+
+</script>
+</body>
+</html>
